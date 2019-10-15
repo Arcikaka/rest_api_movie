@@ -5,10 +5,7 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use AppBundle\Service\JsonSerializer;
 
 class MovieController extends Controller
 {
@@ -23,11 +20,9 @@ class MovieController extends Controller
         $repo = $em->getRepository('AppBundle:Movie');
         $movies = $repo->findAll();
 
-        $encoders = [new XmlEncoder(), new JsonEncoder()];
-        $normalizers = [new ObjectNormalizer()];
-        $serializer = new Serializer($normalizers, $encoders);
+        $serializer = new JsonSerializer();
 
-        $movieJson = $serializer->serialize($movies, 'json');
+        $movieJson = $serializer->JsonSerializerAction($movies);
 
         return $this->render('movies.html.twig', ['movies' => $movieJson]);
     }
@@ -44,19 +39,16 @@ class MovieController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
         $repo = $em->getRepository('AppBundle:Movie');
-
-        $encoders = [new XmlEncoder(), new JsonEncoder()];
-        $normalizers = [new ObjectNormalizer()];
-        $serializer = new Serializer($normalizers, $encoders);
+        $serializer = new JsonSerializer();
 
         $movie = $repo->find($id);
         // if $movie is empty proper information is send
         if (empty($movie)) {
             $message =array("Message" => "Movie on this id not found");
-            $jsonMessage = $serializer->serialize($message, 'json');
+            $jsonMessage = $serializer->JsonSerializerAction($message);
             return $this->render('movieById.html.twig', ['movie' => $jsonMessage]);
         }
-        $jsonMovie = $serializer->serialize($movie, 'json');
+        $jsonMovie = $serializer->JsonSerializerAction($movie);
 
         return $this->render('movieById.html.twig', ['movie' => $jsonMovie]);
 
